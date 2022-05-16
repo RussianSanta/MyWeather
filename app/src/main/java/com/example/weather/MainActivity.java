@@ -3,6 +3,7 @@ package com.example.weather;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -27,18 +28,26 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
+    private LocationManager locationManager;
+    StringBuilder sbGPS = new StringBuilder();
+
+
+
     private Button button;
     private TextView textView;
     private TextView country;
     private TextView humidity;
     private TextView pressure;
     private ImageView imageView;
+    @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         button = findViewById(R.id.button);
         textView = findViewById(R.id.textView);
         country = findViewById(R.id.textView2);
@@ -46,17 +55,48 @@ public class MainActivity extends AppCompatActivity {
         pressure = findViewById(R.id.textView4);
         imageView = findViewById(R.id.imageView);
         imageView.setImageResource(R.drawable.a01d);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 10, 10, locationListener);
+
+        String messageText = showLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+        System.out.println(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude());
+        System.out.println(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude());
+        String url = "https://api.openweathermap.org/data/2.5/weather?lat="+locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude()+"&lon=" + locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude() + "&appid=508dabe2e8078280e8b3e4198e0c0068&lang=ru&units=metric";
+        new GetUrlData().execute(url);
+        // кнопка бесполезная
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String city = "Moscow";
-                String url = "https://api.openweathermap.org/data/2.5/weather?lat=54&lon=55&appid=508dabe2e8078280e8b3e4198e0c0068&lang=ru&units=metric";
+                String url = "https://api.openweathermap.org/data/2.5/weather?lat="+locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude()+"&lon=" + locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude() + "&appid=508dabe2e8078280e8b3e4198e0c0068&lang=ru&units=metric";
                 new GetUrlData().execute(url);
 
 
             }
         });
+
+
+
+
     }
+
+    private LocationListener locationListener = new LocationListener() {
+
+        @Override
+        public void onLocationChanged(Location location) {
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+    };
 
 
     private class GetUrlData extends AsyncTask<String, String, String>{
@@ -124,5 +164,10 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
-
+    private String showLocation(Location location) {
+        return String.format(
+                "Широта: %1$.4f\nДолгота: %2$.4f\nВремя: %3$tF %3$tT",
+                location.getLatitude(), location.getLongitude(), new Date(
+                        location.getTime()));
+    }
 }
