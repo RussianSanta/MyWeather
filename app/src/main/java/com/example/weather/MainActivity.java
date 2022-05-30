@@ -1,17 +1,16 @@
 package com.example.weather;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.location.Location;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.weather.entity.CitiesProvider;
 import com.example.weather.entity.City;
@@ -25,8 +24,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         humidity = findViewById(R.id.textView3);
         pressure = findViewById(R.id.textView4);
         imageView = findViewById(R.id.imageView);
-        imageView.setImageResource(R.drawable.a01d);
+        imageView.setImageResource(R.drawable.a02d);
 
         loadLocation();
 
@@ -95,11 +95,12 @@ public class MainActivity extends AppCompatActivity {
         double longitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude();
 
         String url = "https://api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude + "&appid=bb6eed77276b5bbdefc4747a596f8bd3&lang=ru&units=metric";
-        CitiesProvider.addCity(new City("On location", longitude, latitude));
+
+        City city = new City("On location", longitude, latitude);
+        CitiesProvider.addBaseCity(city);
         cityId = 3;
         new GetUrlData().execute(url);
     }
-
 
     private class GetUrlData extends AsyncTask<String, String, String> {
         protected void onPreExecute() {
@@ -150,15 +151,20 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             try {
                 JSONObject obj = new JSONObject(result);
-                temperature.setText("ТЕМПЕРАТУРА " + obj.getJSONObject("main").getDouble("temp"));
-                country.setText(obj.getString("name"));
-                humidity.setText("Влажность воздуха " + obj.getJSONObject("main").getDouble("humidity"));
-                pressure.setText("Давление атм: " + obj.getJSONObject("main").getDouble("pressure"));
+                String iconName = "a" + obj.getJSONArray("weather").getJSONObject(0).getString("icon");
+                imageView.setImageResource(getApplicationContext().getResources().getIdentifier(iconName,"drawable",getApplicationContext().getPackageName()));
+                temperature.setText("Температура: " + obj.getJSONObject("main").getDouble("temp"));
+                String name = obj.getString("name");
+                if (!name.equals("")) country.setText(obj.getString("name"));
+                else country.setText(CitiesProvider.getCities().get(cityId).getName());
+                humidity.setText("Влажность: " + obj.getJSONObject("main").getDouble("humidity"));
+                pressure.setText("Атм. давление: " + obj.getJSONObject("main").getDouble("pressure"));
             } catch (JSONException e) {
                 e.printStackTrace();
             }

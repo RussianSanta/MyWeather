@@ -1,9 +1,12 @@
 package com.example.weather.entity;
 
+import android.widget.Toast;
+
 import java.util.ArrayList;
 
 public class CitiesProvider {
     private static final ArrayList<City> cities;
+    private static City baseCity;
 
     static {
         cities = new ArrayList<>();
@@ -21,6 +24,16 @@ public class CitiesProvider {
     }
 
     public static void addCity(City city) {
-        cities.add(city);
+        if (!cities.contains(city)) {
+            cities.add(city);
+        }
+    }
+
+    public static void addBaseCity(City city) {
+        if (baseCity != null) {
+            cities.remove(baseCity);
+        }
+        baseCity = city;
+        cities.add(baseCity);
     }
 }

@@ -21,7 +21,6 @@ public class CitiesActivity extends AppCompatActivity {
     private TextView nameInput;
     private TextView latitudeInput;
     private TextView longitudeInput;
-    private Button addButton;
     private City selectedCity;
 
     @Override
@@ -33,7 +32,6 @@ public class CitiesActivity extends AppCompatActivity {
         nameInput = findViewById(R.id.editName);
         latitudeInput = findViewById(R.id.editLatitude);
         longitudeInput = findViewById(R.id.editLongitude);
-        addButton = findViewById(R.id.addButton);
 
         CitiesAdapter adapter = new CitiesAdapter(getApplicationContext(), R.layout.list_item, CitiesProvider.getCities());
         citiesList.setAdapter(adapter);
@@ -70,6 +68,8 @@ public class CitiesActivity extends AppCompatActivity {
 
             CitiesAdapter adapter = new CitiesAdapter(getApplicationContext(), R.layout.list_item, CitiesProvider.getCities());
             citiesList.setAdapter(adapter);
+
+            Toast.makeText(getApplicationContext(), "Удален город " + selectedCity.getName(), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -78,6 +78,6 @@ public class CitiesActivity extends AppCompatActivity {
                 Double.parseDouble(longitudeInput.getText().toString()),
                 Double.parseDouble(latitudeInput.getText().toString())));
 
-
+        Toast.makeText(getApplicationContext(), "Добавлен город " + nameInput.getText(), Toast.LENGTH_SHORT).show();
     }
 }
